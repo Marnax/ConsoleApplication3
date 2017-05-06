@@ -1,33 +1,25 @@
 #include <stdafx.h>
+#include "SimpleThreadpool.h"
 #include <iostream>
-#include <thread>
-#include <mutex>
-#include <condition_variable>
 
 int main()
 {
-	std::mutex m;
-	std::condition_variable v;
-	std::thread t1([&m]() {
-		while (true)     
+	{
+		SimpleThreadPoolOrganizer pool(5);
+		std::vector<std::future<int>> vec;
+		for (int i = 0; i < 500; ++i)
 		{
-			std::unique_lock<std::mutex> lock(m);
-			std::cout << "T1 got the lock! " << std::endl;
-			std::this_thread::sleep_for(std::chrono::seconds(3));
-			std::cout << "T1 will lose the lock!" << std::endl;
+			std::cout << "Füge Task hinzu " << i << std::endl;
+			vec.push_back(pool.addTask(std::function<int(void)>([i]() {
+				Sleep(1000);
+				return int(i);
+			})));
 		}
-	});
-	std::thread t2([&m]() {
-		while (true)
+		std::cout << "Alle Tasks hinzugefügt " << std::endl;
+		for (int i = 0; i < vec.size(); ++i)
 		{
-			std::unique_lock<std::mutex> lock(m);
-			std::cout << "T2 got the lock! " << std::endl;
-			std::this_thread::sleep_for(std::chrono::seconds(2));
-			std::cout << "T2 will lose the lock!" << std::endl;
+			long myVal = vec[i].get();
+			std::cout << "Got Future " << myVal << std::endl;
 		}
-	});
-
-	t1.join();
-	t2.join();
-	return 0;
+	}
 }
