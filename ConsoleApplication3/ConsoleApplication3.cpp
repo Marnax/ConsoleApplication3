@@ -10,7 +10,7 @@ int main()
 		for (int i = 0; i < 500; ++i)
 		{
 			std::cout << "Füge Task hinzu " << i << std::endl;
-			vec.push_back(pool.addTask(std::function<int(void)>([i]() {
+			vec.push_back(pool.addTaskExclusively(std::function<int(void)>([i]() {
 				Sleep(1000);
 				return int(i);
 			})));
